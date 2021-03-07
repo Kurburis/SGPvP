@@ -243,6 +243,21 @@ SGMain.prototype.scanForTargets = function(targeting_data, ships) {
     return { excluded: exc, included: inc };
 };
 
+SGMain.prototype.scanForTargetsFast = function(targeting_data, ships) {
+
+    const include = targeting_data.include;
+
+    for(var i in ships)
+    {
+        var ship = ships[i];
+
+        if(include.ids[ship.id])
+            return ship;
+    }
+
+    return false
+};
+
 SGMain.prototype.chooseTarget = function(ships, ship_pri) {
     var best, i;
 
@@ -1071,12 +1086,23 @@ SGMain.prototype.target = function() {
     if(!ships)
         return;
 
-    var targets = this.scanForTargets( this.storage.targeting, ships );
-    if(targets.included.length > 0) {
-        var ship_pri = (this.page == 'main') ?
-            this.getShipModelPriorities() : null;
-        var best = this.chooseTarget(targets.included, ship_pri);
-        this.doc.location = 'ship2ship_combat.php?playerid=' + best.id;
+    // var targets = this.scanForTargets( this.storage.targeting, ships );
+    // if(targets.included.length > 0) {
+    //     var ship_pri = (this.page == 'main') ?
+    //         this.getShipModelPriorities() : null;
+    //     var best = this.chooseTarget(targets.included, ship_pri);
+    //     this.doc.location = 'ship2ship_combat.php?playerid=' + best.id;
+    //     this.target = this.nop; // prevent freezes by user mashing key too fast
+    //     return;
+    // }
+    //
+    // // no target?
+    // this.nav();
+    var target = this.scanForTargetsFast( this.storage.targeting, ships );
+    if(target === false)
+        this.nav();
+    else{
+        this.doc.location = 'ship2ship_combat.php?playerid=' + target.id;
         this.target = this.nop; // prevent freezes by user mashing key too fast
         return;
     }
